@@ -239,7 +239,7 @@ var Blackjack = function() {
 			playerhand2.reset();
 			dealerhand.reset();
 		}
-		else if (btnmute.check(inputX, inputY)) mute = !mute;
+		//else if (btnmute.check(inputX, inputY)) mute = !mute;
 		else if (_state == TITLE) {
 			if (typeof(Storage) !== "undefined" && Number(localStorage.getItem("bank")) > 0) {
 				load();
@@ -682,9 +682,9 @@ var Blackjack = function() {
 		}
 		else if (_state > TITLE) {
 			btnquit.draw(ctx);
-			btnmute.draw(ctx);
-			if (!mute) ctx.drawImage(resourceRepository.volume, 0, 0, 64, 64, _fontsize/2, _fontsize/2, _fontsize, _fontsize);
-			else ctx.drawImage(resourceRepository.volume, 64, 0, 64, 64, _fontsize/2, _fontsize/2, _fontsize, _fontsize);
+			//btnmute.draw(ctx);
+			//if (!mute) ctx.drawImage(resourceRepository.volume, 0, 0, 64, 64, _fontsize/2, _fontsize/2, _fontsize, _fontsize);
+			//else ctx.drawImage(resourceRepository.volume, 64, 0, 64, 64, _fontsize/2, _fontsize/2, _fontsize, _fontsize);
 		}
 	};
 
