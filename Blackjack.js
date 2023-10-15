@@ -1,5 +1,4 @@
 //TODO:
-//INSERT SOUNDS
 //DEALER DIALOG
 
 var Blackjack = function() {
@@ -46,6 +45,7 @@ var Blackjack = function() {
 	var dealerhand = new Hand();
 
 	var btnquit = new Button();
+	var btnmute = new Button();
 
 	//var btnshuffle = new Button();
 	var btneasy = new Button();
@@ -109,6 +109,7 @@ var Blackjack = function() {
 		btnyes.init("yes", 0, _height*SCREENRATIO, buttonwidth, buttonheight);
 		btnno.init("no", buttonwidth, _height*SCREENRATIO, buttonwidth, buttonheight);
 		btnquit.init("X", _width-_fontsize*2, 0, _fontsize*2, _fontsize*2);
+		btnmute.init(" ", 0, 0, _fontsize*2, _fontsize*2);
 
 		var width = _width/3;
 		var height = _height/5;
@@ -158,6 +159,7 @@ var Blackjack = function() {
 
 	this.mousemove = function(evt) {
 		btnquit.check(evt.clientX, evt.clientY);
+		btnmute.check(evt.clientX, evt.clientY);
 		if (_state == DEALERSELECT) {
 			btneasy.check(evt.clientX, evt.clientY);
 			btnnormal.check(evt.clientX, evt.clientY);
@@ -231,13 +233,23 @@ var Blackjack = function() {
 	click = function(inputX, inputY) {
 		if (btnquit.check(inputX, inputY)) {
 			joker = 0;
+			eraseSave();
 			_state = TITLE;
 			playerhand.reset();
 			playerhand2.reset();
 			dealerhand.reset();
 		}
+		else if (btnmute.check(inputX, inputY)) mute = !mute;
 		else if (_state == TITLE) {
-			_state = DEALERSELECT;
+			if (typeof(Storage) !== "undefined" && Number(localStorage.getItem("bank")) > 0) {
+				load();
+				displayedbank = bank;
+				bet = defaultbet;
+				_state = DEAL;
+			}
+			else {
+				_state = DEALERSELECT;
+			}
 		}
 		else if (_state == DEALERSELECT) {
 			if (btneasy.check(inputX, inputY)) {
@@ -668,7 +680,12 @@ var Blackjack = function() {
 			var timer = ""+Math.round((_nexttick - _tick)/3+1);
 			writeMessage(ctx, timer, YELLOW, (_width-_fontsize*timer.length)/2, _height-(vpos/2), _fontsize);
 		}
-		else if (_state > TITLE) btnquit.draw(ctx);
+		else if (_state > TITLE) {
+			btnquit.draw(ctx);
+			btnmute.draw(ctx);
+			if (!mute) ctx.drawImage(resourceRepository.volume, 0, 0, 64, 64, _fontsize/2, _fontsize/2, _fontsize, _fontsize);
+			else ctx.drawImage(resourceRepository.volume, 64, 0, 64, 64, _fontsize/2, _fontsize/2, _fontsize, _fontsize);
+		}
 	};
 
 	writeDialog = function(t1, t2, c) {
@@ -765,6 +782,7 @@ var Blackjack = function() {
 			}
 			bet = defaultbet;
 			bet2 = 0;
+			save();
 			_nexttick = _tick + 5;
 			_state = RESET;
 		}
@@ -778,6 +796,7 @@ var Blackjack = function() {
 
 			if (bank < bet) {
 				_nexttick = _tick + 25;
+				if (!mute) resourceRepository.gameover.play();
 				_state = GAMEOVER;
 			}
 			else _state = DEAL;
@@ -786,6 +805,7 @@ var Blackjack = function() {
 			//bank = 500;
 			//displayedbank = bank;
 			//shoe.shuffle();
+			eraseSave();
 			_state = TITLE;
 		}
 
@@ -800,6 +820,9 @@ var Blackjack = function() {
 		if (typeof(Storage) !== "undefined") {
 			// Code for localStorage/sessionStorage.
 			localStorage.setItem("bank", bank);
+			localStorage.setItem("bet", defaultbet);
+			localStorage.setItem("bjpayout", bjpayout);
+			localStorage.setItem("dealerselection", dealerselection);
 		}
 		else {
 		  // Sorry! No Web Storage support..
@@ -808,13 +831,23 @@ var Blackjack = function() {
 
 	load = function() {
 		bank = Number(localStorage.getItem("bank"));
+		defaultbet = Number(localStorage.getItem("bet"));
+		bjpayout = Number(localStorage.getItem("bjpayout"));
+		dealerselection =  Number(localStorage.getItem("dealerselection"));
+	};
+
+	eraseSave = function() {
+		localStorage.removeItem("bank");
+		localStorage.removeItem("bet");
+		localStorage.removeItem("bjpayout");
+		localStorage.removeItem("dealerselection");
 	};
 
 	setVolume = function(v) {
 		volume = v;
 
 		resourceRepository.gameover.volume = volume;
-		resourceRepository.cleared.volume = volume;
+		resourceRepository.win.volume = volume;
 	};
 
 }
